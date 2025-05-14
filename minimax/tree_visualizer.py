@@ -1,12 +1,7 @@
-# tree_visualizer.py
-
-import pydotplus  # Instale com: pip install pydotplus
-import uuid
+import pydotplus
 import os
-import platform  # Para identificar o SO
-import subprocess  # Para abrir o arquivo
-
-# TreeNode._node_counter e a classe TreeNode permanecem os mesmos da resposta anterior
+import platform
+import subprocess
 
 
 class TreeNode:
@@ -121,9 +116,7 @@ def _add_nodes_edges(graph, tree_node):
     if tree_node.is_terminal:
         node_shape = "ellipse"
         fillcolor = "khaki"
-        if (
-            "Vitória P1" in tree_node.notes or "Vitória P2" in tree_node.notes
-        ):  # Ajuste para P1/P2
+        if "Vitória P1" in tree_node.notes or "Vitória P2" in tree_node.notes:
             fillcolor = (
                 "mediumseagreen"
                 if (
@@ -131,7 +124,7 @@ def _add_nodes_edges(graph, tree_node):
                     or ("P2" in tree_node.notes and tree_node.score == float("inf"))
                 )
                 else "salmon"
-            )  # verde para vitoria do P1 (MAX), salmão para vitoria do P2 (MIN)
+            )
         if "Empate" in tree_node.notes:
             fillcolor = "lightgoldenrodyellow"
 
@@ -141,7 +134,6 @@ def _add_nodes_edges(graph, tree_node):
         fontcolor = "white"
     elif tree_node.was_cutoff_node:
         node_label += "\n(NÓ DE CORTE)"
-        # Pode adicionar um contorno diferente ou cor aqui
 
     node_pydot = pydotplus.Node(
         tree_node.id,
@@ -176,10 +168,6 @@ def _add_nodes_edges(graph, tree_node):
 def visualize_decision_tree(
     root_decision_node, output_filename="decision_tree.png", view_in_window=False
 ):
-    """
-    Gera uma imagem PNG da árvore de decisão e opcionalmente tenta abri-la no visualizador padrão.
-    Requer que o Graphviz esteja instalado no sistema e no PATH.
-    """
     if not root_decision_node:
         print("Nó raiz não fornecido para visualização.")
         return
@@ -193,7 +181,6 @@ def visualize_decision_tree(
     _add_nodes_edges(graph, root_decision_node)
 
     try:
-        # Garante que o diretório para o output_filename exista, se aplicável
         output_dir = os.path.dirname(output_filename)
         if output_dir and not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -205,18 +192,15 @@ def visualize_decision_tree(
             try:
                 current_system = platform.system()
                 if current_system == "Windows":
-                    # os.startfile(output_filename) # Alternativa mais simples para Windows
                     subprocess.Popen(
                         ["start", "", os.path.abspath(output_filename)], shell=True
                     )
-                elif current_system == "Darwin":  # macOS
+                elif current_system == "Darwin":
                     subprocess.Popen(["open", os.path.abspath(output_filename)])
-                else:  # Linux e outros Unix-like
+                else:
                     subprocess.Popen(["xdg-open", os.path.abspath(output_filename)])
                 print(f"Tentando abrir {output_filename} no visualizador padrão...")
-            except (
-                FileNotFoundError
-            ):  # Se o comando (open, xdg-open, start) não for encontrado
+            except FileNotFoundError:
                 print(
                     f"Comando para abrir arquivo não encontrado. Não foi possível abrir {output_filename} automaticamente."
                 )
@@ -242,62 +226,3 @@ def visualize_decision_tree(
         print("Sem o Graphviz, a imagem da árvore não pode ser gerada.")
     except Exception as e:
         print(f"Erro ao gerar ou visualizar o gráfico: {e}")
-
-
-# Exemplo de uso (para testar tree_visualizer.py isoladamente)
-if __name__ == "__main__":
-    # Simula uma pequena árvore de decisão
-    root = TreeNode(
-        player_type="MAX",
-        depth=0,
-        alpha=float("-inf"),
-        beta=float("inf"),
-        board_state_repr="Estado Inicial",
-    )
-    c1 = TreeNode(
-        player_type="MIN",
-        move_info="Col 0",
-        depth=1,
-        alpha=float("-inf"),
-        beta=float("inf"),
-    )
-    root.add_child(c1, edge_label="Jogar Col 0")
-    gc1_1 = TreeNode(
-        player_type="MAX",
-        move_info="Col 1",
-        depth=2,
-        score=3,
-        is_terminal=True,
-        notes="Folha",
-    )
-    c1.add_child(gc1_1, edge_label="Jogar Col 1")
-    c1.score = 3
-    c1.beta = 3
-    c1.notes = "β=3"
-    root.score = 3
-    root.alpha = 3
-    root.notes = "α=3"
-    c2 = TreeNode(
-        player_type="MIN", move_info="Col 1", depth=1, alpha=3, beta=float("inf")
-    )
-    root.add_child(c2, edge_label="Jogar Col 1")
-    gc2_1 = TreeNode(
-        player_type="MAX",
-        move_info="Col 0",
-        depth=2,
-        score=2,
-        is_terminal=True,
-        notes="Folha",
-    )
-    c2.add_child(gc2_1, edge_label="Jogar Col 0")
-    c2.score = 2
-    c2.beta = 2
-    c2.notes = "β=2. CORTE!"
-    c2.was_cutoff_node = True
-    gc2_2 = TreeNode(
-        player_type="MAX", move_info="Col 2", depth=2, is_pruned=True, notes="Podado"
-    )
-    c2.add_child(gc2_2, edge_label="Jogar Col 2 (Não explorado)")
-
-    # Teste com a nova opção
-    visualize_decision_tree(root, "example_decision_tree.png", view_in_window=True)
