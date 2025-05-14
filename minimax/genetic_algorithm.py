@@ -5,7 +5,7 @@ from minimax import (
     evaluate_board,
 )
 
-POPULATION_SIZE = 10
+POPULATION_SIZE = 20
 N_GENERATIONS = 10
 MUTATION_RATE = 0.3
 MUTATION_STRENGTH = 1
